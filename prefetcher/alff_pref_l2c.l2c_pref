@@ -1,0 +1,140 @@
+#include "cache.h"
+
+
+/* Utilizamos aqui classes e métodos adaptando IP (Instruction Pointer)
+Para PC (Program Counter)*/
+
+#define PC_TRACKER_COUNT 1024
+#define IT_SIZE 256
+#define GHB_SIZE 256
+
+int it[IT_SIZE]={-1};
+globalHistory ghb[GHB_SIZE];
+int start = 0;
+int end = GHB_SIZE-1;
+
+class PC_TRACKER{
+  public:
+
+  //PC atual
+  uint64_t pc;
+  // último endereço acessado pelo PC
+  uint64_t last_cl_addr;
+
+  int64_t last_stride;
+
+  uint32_t lru;
+
+  PC_TRACKER(){
+    pc=0;
+    last_cl_addr = 0;
+    last_stride = 0;
+    lru = 0;
+  };
+
+};
+
+class globalHistory{
+public:
+  uint64_t globalAddr;
+  int linkPtr;
+}
+
+
+int findOther(int index)
+{
+ int ptAux = start;
+
+  do{
+    globalHistory auxGh = ghb[ptAux];
+    if(auxGh.globalAddr == index)
+      return ptAux;
+    else
+    {
+      if(ptAux!=0)
+        ptAux--;
+      else
+        ptAux = GHB_SIZE-1;
+    }
+  }while (ptAux!=start);
+  return -1;
+}
+
+
+void insertGhb(uint64_t pc, int index)
+{
+  globalHistory novo;
+  novo.globalAddr = pc;
+  novo.linkPtr = -1;
+  int a=findOther(index);
+
+  if (a != -1)
+    novo.linkPtr = a;
+
+  ghb[start]=novo;
+  return; 
+
+}
+
+
+int hashKey(uint64_t pc)
+    {
+      return pc % IT_SIZE;
+    }
+
+
+int searchIT(uint64_t pc)
+{
+  int index = hashKey(pc);
+  if (it[index]!=-1)
+    return it[index];
+  else
+    return -1;
+}
+
+void insertIT(int it[], uint64_t pc)
+{
+  int index = hashKey(pc)
+  it[index]=start;
+
+  insertGhb(pc, index);  
+
+  if (start == GHB_SIZE-1)
+    start = 0;
+  else 
+    start++;
+  
+  if(end== GHB_SIZE-1)
+    end=0;
+  else
+  {
+    end++;
+  }
+  
+}
+
+
+
+// INICIALIZAÇÃO DA CACHE
+void CACHE::l2c_prefetcher_initialize() 
+{
+
+}
+
+// OPERAÇÃO DA CACHE 
+uint32_t CACHE::l2c_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache_hit, uint8_t type, uint32_t metadata_in)
+{
+  return metadata_in;
+}
+
+//CHAMADA PARA CADA PREENCHIMENTO DE CACHE
+uint32_t CACHE::l2c_prefetcher_cache_fill(uint64_t addr, uint32_t set, uint32_t way, uint8_t prefetch, uint64_t evicted_addr, uint32_t metadata_in)
+{
+  return metadata_in;
+}
+
+//FIM DA EXECUÇÃO DA SIMULAÇÃO - STATS
+void CACHE::l2c_prefetcher_final_stats()
+{
+
+}
